@@ -8,7 +8,6 @@ import EnrollmentDashboard from './pages/enrollment/Dashboard';
 import { NewLeads, Qualified, TrialDead } from './pages/enrollment/StagePages';
 import Trials from './pages/enrollment/Trials';
 import TrialScheduling from './pages/enrollment/TrialScheduling';
-import UserManagement from './pages/enrollment/UserManagement';
 import ConnectedChannels from './pages/enrollment/ConnectedChannels';
 
 /* Admin & Support panel */
@@ -42,7 +41,7 @@ export default function App() {
               <Route path="trials" element={<Trials />} />
               <Route path="trial-dead" element={<TrialDead />} />
               <Route path="schedule-trial" element={<TrialScheduling />} />
-              <Route path="user-management" element={<UserManagement />} />
+              <Route path="user-management" element={<Navigate to="dashboard" replace />} />
               <Route path="connected-channels" element={<ConnectedChannels />} />
               <Route path="unified-inbox" element={<UnifiedInbox />} />
             </Route>

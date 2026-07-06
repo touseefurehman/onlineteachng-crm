@@ -22,13 +22,8 @@ export const NAV = {
           { to: '/enrollment/trials', label: 'Trials', icon: 'clock', badge: (s) => s.trials.filter((t) => t.status === 'scheduled').length },
           { to: '/enrollment/trial-dead', label: 'Trial Dead', icon: 'x', badge: (s) => s.leads.filter((l) => l.stage === 'trial_dead').length },
           { to: '/enrollment/unified-inbox', label: 'Unified Inbox', icon: 'chat' },
-          { to: '/enrollment/user-management', label: 'User Management', icon: 'users' },
           { to: '/enrollment/connected-channels', label: 'Connected Channels', icon: 'chat' },
         ],
-      },
-      {
-        group: 'Scheduling',
-        items: [{ to: '/enrollment/schedule-trial', label: 'Trial Scheduling', icon: 'calendar' }],
       },
     ],
   },

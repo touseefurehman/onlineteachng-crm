@@ -45,23 +45,10 @@ export function NewLeads() {
   };
 
   const actionsFor = (lead) => {
-    if (lead.stage === 'raw') {
-      return (
-        <Button size="sm" onClick={() => { actions.moveLeadStage(lead.id, 'intake'); toast(`${lead.parent.name} moved to Intake.`); }}>
-          Move to Intake
-        </Button>
-      );
-    }
-
     return (
-      <>
-        <Button size="sm" onClick={() => { actions.moveLeadStage(lead.id, 'qualified'); toast(`${lead.parent.name} marked as qualified.`); }}>
-          Mark Qualified
-        </Button>
-        <Button size="sm" variant="danger-ghost" onClick={() => { actions.moveLeadStage(lead.id, 'trial_dead'); toast(`${lead.parent.name} closed as lost.`, 'info'); }}>
-          Close Lost
-        </Button>
-      </>
+      <Button size="sm" onClick={() => { actions.moveLeadStage(lead.id, 'qualified'); toast(`${lead.parent.name} marked as qualified.`); }}>
+        Mark Qualified
+      </Button>
     );
   };
 
@@ -69,13 +56,13 @@ export function NewLeads() {
     <>
       <PageHeader
         title="New Leads"
-        subtitle="New leads and intake conversations in one place"
+        subtitle="New enquiries ready to qualify"
         actions={<Button icon={<Icon name="plus" size={15} />} onClick={() => setOpen(true)}>Add lead</Button>}
       />
       <LeadTable
         stage={['raw', 'intake']}
         emptyTitle="No new leads"
-        emptyBody="New enquiries and intake conversations will appear here."
+        emptyBody="New enquiries from the website, ads and WhatsApp will appear here."
         actionsFor={actionsFor}
       />
       <Modal open={open} title="Add new lead" onClose={() => setOpen(false)}>
@@ -116,6 +103,8 @@ export function NewLeads() {
 
 export function Qualified() {
   const navigate = useNavigate();
+  const { actions } = useApp();
+  const toast = useToast();
   return (
     <>
       <PageHeader title="Qualified Leads" subtitle="Confirmed as genuine and ready to book a trial class" />
@@ -124,9 +113,14 @@ export function Qualified() {
         emptyTitle="No qualified leads"
         emptyBody="Qualify leads from the New Leads page to see them here."
         actionsFor={(l) => (
-          <Button size="sm" variant="gold" onClick={() => navigate(`/enrollment/schedule-trial?leadId=${l.id}`)}>
-            Schedule Trial
-          </Button>
+          <>
+            <Button size="sm" variant="gold" onClick={() => navigate(`/enrollment/schedule-trial?leadId=${l.id}`)}>
+              Schedule Trial
+            </Button>
+            <Button size="sm" variant="danger-ghost" onClick={() => { actions.moveLeadStage(l.id, 'trial_dead'); toast(`${l.parent.name} moved to Trial Dead.`, 'info'); }}>
+              Trial Dead
+            </Button>
+          </>
         )}
       />
     </>
