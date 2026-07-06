@@ -14,6 +14,6 @@ export function CardHead({ title, sub, right }) {
   );
 }
 
-export function CardBody({ children, style }) {
-  return <div className="card-pad" style={style}>{children}</div>;
+export function CardBody({ children, className = '', style }) {
+  return <div className={`card-pad ${className}`} style={style}>{children}</div>;
 }
