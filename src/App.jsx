@@ -5,7 +5,7 @@ import AppLayout from './layouts/AppLayout';
 
 /* Enrollment panel */
 import EnrollmentDashboard from './pages/enrollment/Dashboard';
-import { NewLeads, Intake, Qualified, TrialDead } from './pages/enrollment/StagePages';
+import { NewLeads, Qualified, TrialDead } from './pages/enrollment/StagePages';
 import Trials from './pages/enrollment/Trials';
 import TrialScheduling from './pages/enrollment/TrialScheduling';
 import UserManagement from './pages/enrollment/UserManagement';
@@ -37,7 +37,7 @@ export default function App() {
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<EnrollmentDashboard />} />
               <Route path="new-leads" element={<NewLeads />} />
-              <Route path="intake" element={<Intake />} />
+              <Route path="intake" element={<Navigate to="new-leads" replace />} />
               <Route path="qualified" element={<Qualified />} />
               <Route path="trials" element={<Trials />} />
               <Route path="trial-dead" element={<TrialDead />} />

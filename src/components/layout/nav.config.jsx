@@ -17,8 +17,7 @@ export const NAV = {
       {
         group: 'Pipeline',
         items: [
-          { to: '/enrollment/new-leads', label: 'New Leads', icon: 'users', badge: (s) => s.leads.filter((l) => l.stage === 'raw').length },
-          { to: '/enrollment/intake', label: 'Intake', icon: 'chat', badge: (s) => s.leads.filter((l) => l.stage === 'intake').length },
+          { to: '/enrollment/new-leads', label: 'New Leads', icon: 'users', badge: (s) => s.leads.filter((l) => ['raw', 'intake'].includes(l.stage)).length },
           { to: '/enrollment/qualified', label: 'Qualified Leads', icon: 'check', badge: (s) => s.leads.filter((l) => l.stage === 'qualified').length },
           { to: '/enrollment/trials', label: 'Trials', icon: 'clock', badge: (s) => s.trials.filter((t) => t.status === 'scheduled').length },
           { to: '/enrollment/trial-dead', label: 'Trial Dead', icon: 'x', badge: (s) => s.leads.filter((l) => l.stage === 'trial_dead').length },

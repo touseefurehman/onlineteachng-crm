@@ -10,7 +10,7 @@ import { useApp } from '../../context/AppContext';
 import { useToast } from '../../hooks/useToast';
 import { COURSES, SOURCES } from '../../data/seed';
 
-/* ----------------------- New Leads (raw) ----------------------- */
+/* ----------------------- New Leads ----------------------- */
 
 export function NewLeads() {
   const { actions } = useApp();
@@ -44,22 +44,39 @@ export function NewLeads() {
     setForm({ name: '', phone: '', email: '', course: COURSES[0], source: SOURCES[0], student: '' });
   };
 
+  const actionsFor = (lead) => {
+    if (lead.stage === 'raw') {
+      return (
+        <Button size="sm" onClick={() => { actions.moveLeadStage(lead.id, 'intake'); toast(`${lead.parent.name} moved to Intake.`); }}>
+          Move to Intake
+        </Button>
+      );
+    }
+
+    return (
+      <>
+        <Button size="sm" onClick={() => { actions.moveLeadStage(lead.id, 'qualified'); toast(`${lead.parent.name} marked as qualified.`); }}>
+          Mark Qualified
+        </Button>
+        <Button size="sm" variant="danger-ghost" onClick={() => { actions.moveLeadStage(lead.id, 'trial_dead'); toast(`${lead.parent.name} closed as lost.`, 'info'); }}>
+          Close Lost
+        </Button>
+      </>
+    );
+  };
+
   return (
     <>
       <PageHeader
         title="New Leads"
-        subtitle="Newly captured leads awaiting first contact"
+        subtitle="New leads and intake conversations in one place"
         actions={<Button icon={<Icon name="plus" size={15} />} onClick={() => setOpen(true)}>Add lead</Button>}
       />
       <LeadTable
-        stage="raw"
+        stage={['raw', 'intake']}
         emptyTitle="No new leads"
-        emptyBody="New enquiries from the website, ads and WhatsApp will appear here."
-        actionsFor={(l) => (
-          <Button size="sm" onClick={() => { actions.moveLeadStage(l.id, 'intake'); toast(`${l.parent.name} moved to Intake.`); }}>
-            Move to Intake
-          </Button>
-        )}
+        emptyBody="New enquiries and intake conversations will appear here."
+        actionsFor={actionsFor}
       />
       <Modal open={open} title="Add new lead" onClose={() => setOpen(false)}>
         <div className="form-grid-2">
@@ -95,33 +112,6 @@ export function NewLeads() {
   );
 }
 
-/* ----------------------- Intake ----------------------- */
-
-export function Intake() {
-  const { actions } = useApp();
-  const toast = useToast();
-  return (
-    <>
-      <PageHeader title="Intake" subtitle="Leads currently in the initial qualification conversation" />
-      <LeadTable
-        stage="intake"
-        emptyTitle="Nothing in intake"
-        emptyBody="Move a new lead here once the first conversation starts."
-        actionsFor={(l) => (
-          <>
-            <Button size="sm" onClick={() => { actions.moveLeadStage(l.id, 'qualified'); toast(`${l.parent.name} marked as qualified.`); }}>
-              Mark Qualified
-            </Button>
-            <Button size="sm" variant="danger-ghost" onClick={() => { actions.moveLeadStage(l.id, 'trial_dead'); toast(`${l.parent.name} closed as lost.`, 'info'); }}>
-              Close Lost
-            </Button>
-          </>
-        )}
-      />
-    </>
-  );
-}
-
 /* ----------------------- Qualified ----------------------- */
 
 export function Qualified() {
@@ -132,7 +122,7 @@ export function Qualified() {
       <LeadTable
         stage="qualified"
         emptyTitle="No qualified leads"
-        emptyBody="Qualify leads from the Intake page to see them here."
+        emptyBody="Qualify leads from the New Leads page to see them here."
         actionsFor={(l) => (
           <Button size="sm" variant="gold" onClick={() => navigate(`/enrollment/schedule-trial?leadId=${l.id}`)}>
             Schedule Trial

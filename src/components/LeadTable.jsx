@@ -11,6 +11,10 @@ import { useSimulatedLoading } from '../hooks/useSimulatedLoading';
 
 const PER_PAGE = 8;
 
+function studentNames(students) {
+  return students.map((student) => student.name).join(', ');
+}
+
 /**
  * Reusable pipeline-stage table with search, pagination,
  * loading skeletons and an empty state.
@@ -19,20 +23,27 @@ export default function LeadTable({ stage, actionsFor, emptyTitle, emptyBody }) 
   const { leads, search } = useApp();
   const q = useDebounce(search.toLowerCase());
   const [page, setPage] = useState(1);
-  const loading = useSimulatedLoading([stage]);
+  const stages = useMemo(() => (Array.isArray(stage) ? stage : [stage]), [stage]);
+  const stageKey = stages.join('|');
+  const loading = useSimulatedLoading([stageKey]);
 
   const list = useMemo(() => {
-    let l = leads.filter((x) => x.stage === stage);
+    let l = leads.filter((x) => stages.includes(x.stage));
     if (q) {
       l = l.filter(
         (x) =>
           x.parent.name.toLowerCase().includes(q) ||
-          x.parent.email.includes(q) ||
+          x.parent.email?.toLowerCase().includes(q) ||
+          x.parent.phone?.toLowerCase().includes(q) ||
+          x.parent.country?.toLowerCase().includes(q) ||
+          x.parent.timezone?.toLowerCase().includes(q) ||
+          x.source?.toLowerCase().includes(q) ||
+          x.course?.toLowerCase().includes(q) ||
           x.students.some((s) => s.name.toLowerCase().includes(q)),
       );
     }
     return l;
-  }, [leads, stage, q]);
+  }, [leads, stages, q]);
 
   const totalPages = Math.max(1, Math.ceil(list.length / PER_PAGE));
   const safePage = Math.min(page, totalPages);
@@ -41,40 +52,44 @@ export default function LeadTable({ stage, actionsFor, emptyTitle, emptyBody }) 
   return (
     <>
       <div className="table-wrap">
-        <table>
+        <table className="lead-table">
           <thead>
             <tr>
-              <th>Parent / Lead</th>
+              <th>Date</th>
+              <th>Lead source</th>
               <th>Students</th>
+              <th>Contact number</th>
+              <th>Email</th>
+              <th>Country</th>
+              <th>Time zone</th>
               <th>Course interest</th>
-              <th>Source</th>
-              <th>Counselor</th>
               <th>Created</th>
-              <th>Last activity</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={8} />)
+              Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={10} />)
             ) : rows.length ? (
               rows.map((l) => (
                 <tr key={l.id}>
+                  <td>{fmtDate(l.createdAt)}</td>
+                  <td><Badge tone="muted" dot={false}>{l.source}</Badge></td>
                   <td>
                     <div className="name-cell">
                       <Avatar name={l.parent.name} />
                       <div>
-                        <b>{l.parent.name}</b>
-                        <span>{l.parent.country} · {l.parent.preferredContact}</span>
+                        <b>{studentNames(l.students)}</b>
+                        <span>{l.parent.name}</span>
                       </div>
                     </div>
                   </td>
-                  <td>{l.students.map((s) => s.name).join(', ')}</td>
+                  <td>{l.parent.phone || '—'}</td>
+                  <td className="lead-email-cell">{l.parent.email || '—'}</td>
+                  <td>{l.parent.country || '—'}</td>
+                  <td className="lead-timezone-cell">{l.parent.timezone || '—'}</td>
                   <td>{l.course}</td>
-                  <td><Badge tone="muted" dot={false}>{l.source}</Badge></td>
-                  <td>{l.agent}</td>
-                  <td>{fmtDate(l.createdAt)}</td>
-                  <td>{timeAgo(l.lastActivity)}</td>
+                  <td>{timeAgo(l.createdAt)}</td>
                   <td>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{actionsFor(l)}</div>
                   </td>
@@ -82,7 +97,7 @@ export default function LeadTable({ stage, actionsFor, emptyTitle, emptyBody }) 
               ))
             ) : (
               <tr>
-                <td colSpan={8}>
+                <td colSpan={10}>
                   <EmptyState icon="users" title={emptyTitle}>{emptyBody}</EmptyState>
                 </td>
               </tr>
