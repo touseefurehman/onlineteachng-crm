@@ -608,6 +608,37 @@ tbody tr:last-child td { border-bottom: 0; }
   padding: 10px 12px;
   background: #fbfcfb;
 }
+.user-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.user-setting-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.rule-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--teal-600);
+}
+.notification-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 0;
+  font-size: 13px;
+  color: var(--text-1);
+}
+.notification-row input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--teal-600);
+}
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1180px) {
