@@ -3,6 +3,7 @@ import PageHeader from '../../components/layout/PageHeader';
 import Avatar from '../../components/ui/Avatar';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/ui/Icons';
+import { AGENTS } from '../../data/seed';
 
 const channels = [
   { id: 'all', label: 'All Channels', count: 22, tone: 'all' },
@@ -23,7 +24,7 @@ const conversations = [
     phone: '+144 597-4240',
     channel: 'Email',
     channelId: 'email',
-    preview: 'You: Here is your updated Zoom link...',
+    preview: 'Mariam replied: Here is your updated Zoom link...',
     time: '44m ago',
     active: true,
   },
@@ -47,7 +48,7 @@ const conversations = [
     phone: '+144 597-5120',
     channel: 'WhatsApp Business',
     channelId: 'whatsapp-business',
-    preview: 'You: Walaikumassalam! Yes, we hav...',
+    preview: 'Sohail replied: Walaikumassalam! Yes, we hav...',
     time: '1d ago',
     active: true,
   },
@@ -59,7 +60,7 @@ const conversations = [
     phone: '+144 597-6132',
     channel: 'WhatsApp Linked Device',
     channelId: 'whatsapp-linked',
-    preview: 'You: Alhamdulillah, glad to hear that!...',
+    preview: 'Ayesha replied: Alhamdulillah, glad to hear that!...',
     time: '1d ago',
     active: true,
   },
@@ -95,7 +96,7 @@ const conversations = [
     phone: '+144 597-9822',
     channel: 'WhatsApp API',
     channelId: 'whatsapp-api',
-    preview: 'You: Walaikumassalam! Yes, we hav...',
+    preview: 'Bilal replied: Walaikumassalam! Yes, we hav...',
     time: '1d ago',
     active: true,
   },
@@ -137,22 +138,77 @@ const conversations = [
   },
 ];
 
-const messages = [
-  {
-    id: 1,
-    dir: 'in',
-    text: 'My child enjoyed the lesson, can we continue?',
-    channel: 'Email',
-    meta: '03 Jul · 06:42 AM',
-  },
-  {
-    id: 2,
-    dir: 'out',
-    text: 'Walaikumassalam! Yes, we have flexible timings for Quran Reading (Nazra). Let me share the schedule.',
-    channel: 'Email',
-    meta: '03 Jul · 09:24 AM',
-  },
-];
+const initialMessages = {
+  'halima-abdullah': [
+    {
+      id: 1,
+      dir: 'in',
+      text: 'My child enjoyed the lesson, can we continue?',
+      channel: 'WhatsApp API',
+      meta: '03 Jul · 06:42 AM',
+    },
+    {
+      id: 2,
+      dir: 'out',
+      text: 'Walaikumassalam! Yes, we have flexible timings for Quran Reading (Nazra). Let me share the schedule.',
+      channel: 'WhatsApp API',
+      meta: '03 Jul · 09:24 AM',
+      repliedBy: 'Sana Malik',
+    },
+  ],
+  'iman-ahmed': [
+    {
+      id: 3,
+      dir: 'in',
+      text: 'Could you please resend the class link?',
+      channel: 'Email',
+      meta: '03 Jul · 08:04 AM',
+    },
+    {
+      id: 4,
+      dir: 'out',
+      text: 'Here is your updated Zoom link for today. Please join five minutes early.',
+      channel: 'Email',
+      meta: '03 Jul · 08:17 AM',
+      repliedBy: 'Fatima Noor',
+    },
+  ],
+};
+
+function defaultMessagesFor(conversation) {
+  const replyMatch = conversation.preview.match(/^([^:]+) replied:\s*(.*)$/);
+  if (replyMatch) {
+    return [
+      {
+        id: `${conversation.id}-out`,
+        dir: 'out',
+        text: replyMatch[2].replace('...', '.'),
+        channel: conversation.channel,
+        meta: conversation.time,
+        repliedBy: replyMatch[1],
+      },
+    ];
+  }
+
+  return [
+    {
+      id: `${conversation.id}-in`,
+      dir: 'in',
+      text: conversation.preview.replace('...', '.'),
+      channel: conversation.channel,
+      meta: `${conversation.time}`,
+    },
+  ];
+}
+
+function formatMessageTime(date) {
+  return date.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 function channelIconName(channel) {
   if (channel.includes('Phone')) return 'phone';
@@ -172,6 +228,9 @@ function ChannelBadge({ channel }) {
 export default function UnifiedInbox() {
   const [activeChannel, setActiveChannel] = useState('all');
   const [selectedId, setSelectedId] = useState('halima-abdullah');
+  const [messagesByConversation, setMessagesByConversation] = useState(initialMessages);
+  const [replyingAs] = useState(AGENTS[0]);
+  const [replyText, setReplyText] = useState('');
 
   const filteredConversations = useMemo(() => {
     if (activeChannel === 'all') return conversations;
@@ -179,12 +238,27 @@ export default function UnifiedInbox() {
   }, [activeChannel]);
 
   const selectedConversation = filteredConversations.find((conversation) => conversation.id === selectedId) || filteredConversations[0] || conversations[1];
-  const headerContact = {
-    initials: 'ZI',
-    name: 'Zainab Iqbal',
-    phone: '+144 597-5120',
-    email: 'zainab.iqbal@mail.com',
-  };
+  const activeMessages = messagesByConversation[selectedConversation.id] || defaultMessagesFor(selectedConversation);
+
+  function handleSendReply() {
+    const text = replyText.trim();
+    if (!text) return;
+
+    const message = {
+      id: `${selectedConversation.id}-${Date.now()}`,
+      dir: 'out',
+      text,
+      channel: selectedConversation.channel,
+      meta: formatMessageTime(new Date()),
+      repliedBy: replyingAs,
+    };
+
+    setMessagesByConversation((current) => ({
+      ...current,
+      [selectedConversation.id]: [...(current[selectedConversation.id] || defaultMessagesFor(selectedConversation)), message],
+    }));
+    setReplyText('');
+  }
 
   return (
     <>
@@ -252,10 +326,10 @@ export default function UnifiedInbox() {
         <section className="active-inbox-thread">
           <div className="active-inbox-thread-head">
             <div className="active-inbox-thread-contact">
-              <Avatar name={headerContact.initials} size={38} />
+              <Avatar name={selectedConversation.name} size={38} />
               <div>
-                <h2>{headerContact.name}</h2>
-                <p>{headerContact.phone} · {headerContact.email}</p>
+                <h2>{selectedConversation.name}</h2>
+                <p>{selectedConversation.phone} · {selectedConversation.email}</p>
               </div>
               <Button variant="ghost" size="sm">View Profile</Button>
             </div>
@@ -263,15 +337,35 @@ export default function UnifiedInbox() {
           </div>
 
           <div className="active-inbox-messages">
-            {messages.map((message) => (
+            {activeMessages.map((message) => (
               <div key={message.id} className={`active-inbox-message ${message.dir}`}>
                 <div className="active-inbox-message-bubble">{message.text}</div>
                 <div className="active-inbox-message-meta">
                   <ChannelBadge channel={message.channel} />
                   <span>{message.meta}</span>
+                  {message.dir === 'out' && message.repliedBy && (
+                    <span className="active-inbox-replied-by">
+                      <Icon name="user" size={12} />
+                      Replied by {message.repliedBy}
+                    </span>
+                  )}
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="active-inbox-composer">
+            <textarea
+              value={replyText}
+              onChange={(event) => setReplyText(event.target.value)}
+              placeholder={`Reply to ${selectedConversation.name}`}
+            />
+            <div className="active-inbox-composer-footer">
+              <span>Customer sees only the message text.</span>
+              <Button size="sm" icon={<Icon name="arrowRight" size={14} />} onClick={handleSendReply}>
+                Send reply
+              </Button>
+            </div>
           </div>
         </section>
       </div>

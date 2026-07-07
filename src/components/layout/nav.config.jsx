@@ -15,13 +15,16 @@ export const NAV = {
         items: [{ to: '/enrollment/dashboard', label: 'Dashboard', icon: 'dashboard' }],
       },
       {
+        group: 'Inbox',
+        items: [{ to: '/enrollment/unified-inbox', label: 'Unified Inbox', icon: 'chat' }],
+      },
+      {
         group: 'Pipeline',
         items: [
           { to: '/enrollment/new-leads', label: 'New Leads', icon: 'users', badge: (s) => s.leads.filter((l) => ['raw', 'intake'].includes(l.stage)).length },
           { to: '/enrollment/qualified', label: 'Qualified Leads', icon: 'check', badge: (s) => s.leads.filter((l) => l.stage === 'qualified').length },
           { to: '/enrollment/trials', label: 'Trials', icon: 'clock', badge: (s) => s.trials.filter((t) => t.status === 'scheduled').length },
           { to: '/enrollment/trial-dead', label: 'Trial Dead', icon: 'x', badge: (s) => s.leads.filter((l) => l.stage === 'trial_dead').length },
-          { to: '/enrollment/unified-inbox', label: 'Unified Inbox', icon: 'chat' },
           { to: '/enrollment/connected-channels', label: 'Connected Channels', icon: 'chat' },
         ],
       },
@@ -35,6 +38,10 @@ export const NAV = {
       {
         group: 'Overview',
         items: [{ to: '/admin/dashboard', label: 'Dashboard', icon: 'dashboard' }],
+      },
+      {
+        group: 'Inbox',
+        items: [{ to: '/admin/unified-inbox', label: 'Unified Inbox', icon: 'chat' }],
       },
       {
         group: 'Families',
