@@ -20,6 +20,23 @@ export function fmtDateTime(d) {
   });
 }
 
+export function fmtExactDateTime(d, timezone) {
+  if (!d) return '—';
+  const date = new Date(d);
+  const zone = timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const parts = date.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: zone,
+    timeZoneName: 'short',
+  });
+  return parts.replace(',', ' —');
+}
+
 export function timeAgo(d) {
   if (!d) return '—';
   const diff = Date.now() - new Date(d).getTime();

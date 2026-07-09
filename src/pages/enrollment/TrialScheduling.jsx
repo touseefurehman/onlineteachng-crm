@@ -176,9 +176,28 @@ export default function TrialScheduling() {
     </button>
   );
 
+  if (!sourceLead && !rescheduleTrial) {
+    return (
+      <>
+        <PageHeader
+          title="Trial Scheduling"
+          subtitle="Open scheduling from a qualified lead or reschedule an existing trial."
+          actions={<Button variant="ghost" onClick={() => navigate('/enrollment/qualified')}>Go to Qualified Leads</Button>}
+        />
+        <Card>
+          <CardBody>
+            <EmptyState icon="calendar" title="Direct scheduling removed">
+              Trial scheduling now starts from a qualified lead, so every trial remains attached to a lead record and audit trail.
+            </EmptyState>
+          </CardBody>
+        </Card>
+      </>
+    );
+  }
+
   return (
     <>
-      {/* Hero banner mirroring the "Direct Trial Scheduling" screenshot */}
+      {/* Scheduling is lead-backed or trial-backed; direct creation is intentionally disabled. */}
       <div
         style={{
           background: 'linear-gradient(120deg, var(--teal-900), var(--teal-700))',
@@ -189,12 +208,12 @@ export default function TrialScheduling() {
       >
         <div>
           <div className="font-display" style={{ fontSize: 24, fontWeight: 600 }}>
-            {rescheduleTrial ? 'Reschedule Trial' : 'Direct Trial Scheduling'}
+            {rescheduleTrial ? 'Reschedule Trial' : 'Schedule Qualified Trial'}
           </div>
           <div style={{ color: '#c8ddda', fontSize: 13, marginTop: 4, maxWidth: 620 }}>
             {rescheduleTrial
               ? `Move ${rescheduleTrial.studentName}'s trial to a new slot. Only tutors free in the new slot can be chosen.`
-              : 'Add the family and student, pick the student\u2019s time first, then choose only tutors who are free in that exact slot. No admin queue step.'}
+              : `Schedule ${sourceLead.parent.name}'s qualified lead. Pick the student time first, then choose only tutors free in that exact slot.`}
           </div>
         </div>
         <span
@@ -204,7 +223,7 @@ export default function TrialScheduling() {
             borderRadius: 20, padding: '7px 14px', whiteSpace: 'nowrap',
           }}
         >
-          ✓ Direct to Tutor
+          Lead-backed
         </span>
       </div>
 
@@ -498,7 +517,7 @@ export default function TrialScheduling() {
               Refresh Available Tutors
             </Button>
             <Button onClick={submit} icon={<Icon name="calendar" size={15} />}>
-              {rescheduleTrial ? 'Confirm Reschedule' : 'Create Student + Schedule Trial'}
+            {rescheduleTrial ? 'Confirm Reschedule' : 'Schedule Trial'}
             </Button>
           </div>
         </div>

@@ -5,10 +5,11 @@ import AppLayout from './layouts/AppLayout';
 
 /* Enrollment panel */
 import EnrollmentDashboard from './pages/enrollment/Dashboard';
-import { NewLeads, Qualified, TrialDead } from './pages/enrollment/StagePages';
+import { FollowUps, NewLeads, Qualified, Reports, TrialDead } from './pages/enrollment/StagePages';
 import Trials from './pages/enrollment/Trials';
 import TrialScheduling from './pages/enrollment/TrialScheduling';
 import ConnectedChannels from './pages/enrollment/ConnectedChannels';
+import LeadProfile from './pages/enrollment/LeadProfile';
 
 /* Admin & Support panel */
 import AdminDashboard from './pages/admin/Dashboard';
@@ -18,6 +19,21 @@ import Support from './pages/admin/Support';
 import Communications from './pages/admin/Communications';
 import Tickets from './pages/admin/Tickets';
 import UnifiedInbox from './pages/admin/UnifiedInbox';
+import {
+  ActiveStudents,
+  AdminReports,
+  ApprovalCenter,
+  Attendance,
+  BillingInvoices,
+  ClassSchedule,
+  DeadFamilies,
+  FamiliesOnLeave,
+  FamilyDiary,
+  ParentCommunication,
+  StudentNotes,
+  StudentProfiles,
+  TeacherSchedule,
+} from './pages/admin/Operations';
 
 /**
  * Routing is split into the two (and only two) panels.
@@ -41,6 +57,8 @@ export default function App() {
               <Route path="trials" element={<Trials />} />
               <Route path="trial-dead" element={<TrialDead />} />
               <Route path="schedule-trial" element={<TrialScheduling />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="leads/:id" element={<LeadProfile />} />
               <Route path="user-management" element={<Navigate to="dashboard" replace />} />
               <Route path="connected-channels" element={<ConnectedChannels />} />
               <Route path="unified-inbox" element={<UnifiedInbox />} />
@@ -51,10 +69,23 @@ export default function App() {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="families" element={<Families />} />
               <Route path="families/:id" element={<FamilyProfile />} />
+              <Route path="families-on-leave" element={<FamiliesOnLeave />} />
+              <Route path="dead-families" element={<DeadFamilies />} />
+              <Route path="active-students" element={<ActiveStudents />} />
+              <Route path="student-profiles" element={<StudentProfiles />} />
+              <Route path="teacher-schedule" element={<TeacherSchedule />} />
+              <Route path="class-schedule" element={<ClassSchedule />} />
               <Route path="support" element={<Support />} />
               <Route path="communications" element={<Communications />} />
               <Route path="tickets" element={<Tickets />} />
               <Route path="unified-inbox" element={<UnifiedInbox />} />
+              <Route path="attendance" element={<Attendance />} />
+              <Route path="student-notes" element={<StudentNotes />} />
+              <Route path="family-diary" element={<FamilyDiary />} />
+              <Route path="parent-communication" element={<ParentCommunication />} />
+              <Route path="billing-invoices" element={<BillingInvoices />} />
+              <Route path="reports" element={<AdminReports />} />
+              <Route path="approvals" element={<ApprovalCenter />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/enrollment/dashboard" replace />} />

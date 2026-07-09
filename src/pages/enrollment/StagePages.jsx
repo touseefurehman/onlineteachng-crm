@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/layout/PageHeader';
 import LeadTable from '../../components/LeadTable';
@@ -8,12 +8,18 @@ import Field from '../../components/ui/Field';
 import Icon from '../../components/ui/Icons';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../hooks/useToast';
-import { COURSES, SOURCES } from '../../data/seed';
+import { COURSES, FOLLOW_UP_PRIORITIES, SOURCES } from '../../data/seed';
+import Badge from '../../components/ui/Badge';
+import StatCard from '../../components/ui/StatCard';
+import { Card, CardBody, CardHead } from '../../components/ui/Card';
+import BarChart from '../../components/charts/BarChart';
+import { fmtDate } from '../../utils/date';
 
 /* ----------------------- New Leads ----------------------- */
 
 export function NewLeads() {
   const { actions } = useApp();
+  const navigate = useNavigate();
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '', email: '', course: COURSES[0], source: SOURCES[0], student: '' });
@@ -35,6 +41,8 @@ export function NewLeads() {
       source: form.source,
       agent: 'Sohail Sales22',
       tags: [],
+      priority: 'Medium',
+      nextFollowUp: new Date(),
       createdAt: new Date(),
       lastActivity: new Date(),
       notes: [],
@@ -46,9 +54,14 @@ export function NewLeads() {
 
   const actionsFor = (lead) => {
     return (
-      <Button size="sm" onClick={() => { actions.moveLeadStage(lead.id, 'qualified'); toast(`${lead.parent.name} marked as qualified.`); }}>
-        Mark Qualified
-      </Button>
+      <>
+        <Button size="sm" variant="ghost" icon={<Icon name="chat" size={14} />} onClick={() => navigate(`/enrollment/leads/${lead.id}`)}>
+          Start Conversation
+        </Button>
+        <Button size="sm" onClick={() => { actions.moveLeadStage(lead.id, 'qualified', 'Sohail Sales22'); toast(`${lead.parent.name} marked as qualified.`); }}>
+          Mark Qualified
+        </Button>
+      </>
     );
   };
 
@@ -60,7 +73,7 @@ export function NewLeads() {
         actions={<Button icon={<Icon name="plus" size={15} />} onClick={() => setOpen(true)}>Add lead</Button>}
       />
       <LeadTable
-        stage={['raw', 'intake']}
+        stage="raw"
         emptyTitle="No new leads"
         emptyBody="New enquiries from the website, ads and WhatsApp will appear here."
         actionsFor={actionsFor}
@@ -99,6 +112,12 @@ export function NewLeads() {
   );
 }
 
+function dateInputValue(value) {
+  if (!value) return '';
+  if (typeof value === 'string') return value.slice(0, 10);
+  return value.toISOString().slice(0, 10);
+}
+
 /* ----------------------- Qualified ----------------------- */
 
 export function Qualified() {
@@ -117,7 +136,10 @@ export function Qualified() {
             <Button size="sm" variant="gold" onClick={() => navigate(`/enrollment/schedule-trial?leadId=${l.id}`)}>
               Schedule Trial
             </Button>
-            <Button size="sm" variant="danger-ghost" onClick={() => { actions.moveLeadStage(l.id, 'trial_dead'); toast(`${l.parent.name} moved to Trial Dead.`, 'info'); }}>
+            <Button size="sm" variant="ghost" onClick={() => navigate(`/enrollment/leads/${l.id}`)}>
+              Open
+            </Button>
+            <Button size="sm" variant="danger-ghost" onClick={() => { actions.moveLeadStage(l.id, 'trial_dead', 'Sohail Sales22'); toast(`${l.parent.name} moved to Trial Dead.`, 'info'); }}>
               Trial Dead
             </Button>
           </>
@@ -131,6 +153,7 @@ export function Qualified() {
 
 export function TrialDead() {
   const { actions } = useApp();
+  const navigate = useNavigate();
   const toast = useToast();
   return (
     <>
@@ -140,11 +163,131 @@ export function TrialDead() {
         emptyTitle="No lost trials"
         emptyBody="Leads that don't convert after a trial move here automatically."
         actionsFor={(l) => (
-          <Button size="sm" variant="ghost" onClick={() => { actions.moveLeadStage(l.id, 'qualified'); toast(`${l.parent.name} re-opened as qualified.`); }}>
-            Re-engage
-          </Button>
+          <>
+            <Button size="sm" variant="ghost" onClick={() => navigate(`/enrollment/leads/${l.id}`)}>Open</Button>
+            <Button size="sm" variant="ghost" onClick={() => { actions.moveLeadStage(l.id, 'qualified', 'Sohail Sales22'); toast(`${l.parent.name} re-opened as qualified.`); }}>
+              Re-engage
+            </Button>
+          </>
         )}
       />
+    </>
+  );
+}
+
+/* ----------------------- Follow-ups ----------------------- */
+
+export function FollowUps() {
+  const { leads, actions } = useApp();
+  const navigate = useNavigate();
+  const toast = useToast();
+  const today = new Date().toISOString().slice(0, 10);
+  const list = useMemo(
+    () => [...leads]
+      .filter((lead) => lead.stage !== 'trial_dead')
+      .sort((a, b) => new Date(a.nextFollowUp || a.lastActivity) - new Date(b.nextFollowUp || b.lastActivity)),
+    [leads],
+  );
+
+  return (
+    <>
+      <PageHeader title="Follow-ups" subtitle="Next actions, reminders and overdue lead callbacks" />
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Lead</th><th>Stage</th><th>Priority</th><th>Next follow-up</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {list.map((lead) => {
+              const due = dateInputValue(lead.nextFollowUp);
+              const overdue = due && due < today;
+              return (
+                <tr key={lead.id}>
+                  <td>
+                    <div className="name-cell">
+                      <Icon name="bell" size={18} />
+                      <div><b>{lead.parent.name}</b><span>{lead.students.map((s) => s.name).join(', ')}</span></div>
+                    </div>
+                  </td>
+                  <td><Badge tone={lead.stage === 'qualified' ? 'gold' : 'teal'}>{lead.stage.replace('_', ' ')}</Badge></td>
+                  <td>
+                    <select
+                      value={lead.priority || 'Medium'}
+                      onChange={(e) => actions.updateLeadFollowUp(lead.id, lead.nextFollowUp || new Date(), e.target.value, 'Sohail Sales22')}
+                      aria-label={`Priority for ${lead.parent.name}`}
+                    >
+                      {FOLLOW_UP_PRIORITIES.map((p) => <option key={p}>{p}</option>)}
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      type="date"
+                      value={due || today}
+                      onChange={(e) => {
+                        actions.updateLeadFollowUp(lead.id, e.target.value, lead.priority || 'Medium', 'Sohail Sales22');
+                        toast('Follow-up reminder updated.');
+                      }}
+                      aria-label={`Follow-up date for ${lead.parent.name}`}
+                    />
+                    {overdue && <div style={{ marginTop: 4 }}><Badge tone="danger">Overdue</Badge></div>}
+                  </td>
+                  <td><Button size="sm" variant="ghost" onClick={() => navigate(`/enrollment/leads/${lead.id}`)}>Open</Button></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+/* ----------------------- Reports ----------------------- */
+
+export function Reports() {
+  const { leads, trials } = useApp();
+  const toast = useToast();
+  const byStage = (stage) => leads.filter((lead) => lead.stage === stage).length;
+  const converted = trials.filter((trial) => trial.status === 'converted').length;
+  const dead = byStage('trial_dead') + trials.filter((trial) => trial.status === 'no_show' || trial.status === 'cancelled').length;
+  const conversionRate = trials.length ? Math.round((converted / trials.length) * 100) : 0;
+  const deadRate = trials.length ? Math.round((dead / (trials.length + dead)) * 100) : 0;
+  const today = new Date().toISOString().slice(0, 10);
+  const newToday = leads.filter((lead) => lead.createdAt?.toISOString?.().slice(0, 10) === today).length;
+
+  const funnel = [
+    { label: 'New', value: byStage('raw'), color: 'var(--teal-500)' },
+    { label: 'Qualified', value: byStage('qualified'), color: 'var(--gold-400)' },
+    { label: 'Trial', value: byStage('trial'), color: 'var(--info)' },
+    { label: 'Dead', value: byStage('trial_dead'), color: 'var(--danger)' },
+  ];
+  return (
+    <>
+      <PageHeader
+        title="Reports"
+        subtitle="Enrollment performance, conversion funnel and export-ready summaries"
+        actions={
+          <>
+            <Button variant="ghost" icon={<Icon name="card" size={15} />} onClick={() => toast('CSV export prepared for current date range.', 'info')}>CSV</Button>
+            <Button variant="ghost" icon={<Icon name="card" size={15} />} onClick={() => toast('Excel export prepared for current date range.', 'info')}>Excel</Button>
+            <Button variant="gold" icon={<Icon name="card" size={15} />} onClick={() => toast('PDF report prepared for current date range.', 'info')}>PDF</Button>
+          </>
+        }
+      />
+      <div className="grid grid-4">
+        <StatCard label="New today" value={newToday} delta={fmtDate(new Date())} />
+        <StatCard label="Qualified leads" value={byStage('qualified')} delta="Ready for scheduling" tone="var(--teal-600)" />
+        <StatCard label="Trial conversion" value={`${conversionRate}%`} delta={`${converted} converted`} tone="var(--success)" />
+        <StatCard label="Trial dead rate" value={`${deadRate}%`} delta={`${dead} lost or no-show`} tone="var(--danger)" />
+      </div>
+      <div className="grid grid-2" style={{ marginTop: 14 }}>
+        <Card>
+          <CardHead title="Conversion funnel" sub="Lead aging and stage movement summary" />
+          <CardBody><BarChart data={funnel} /></CardBody>
+        </Card>
+      </div>
     </>
   );
 }

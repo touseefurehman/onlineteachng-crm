@@ -14,13 +14,16 @@ export default function AdminDashboard() {
   const { families, tickets } = useApp();
   const navigate = useNavigate();
 
-  const students = families.flatMap((f) => f.students);
+  const activeFamilies = families.filter((f) => f.status === 'active');
+  const familiesOnLeave = families.filter((f) => f.status === 'on_leave');
+  const deadFamilies = families.filter((f) => f.status === 'dead');
+  const students = activeFamilies.flatMap((f) => f.students);
   const openTickets = tickets.filter((t) => t.status === 'Open' || t.status === 'In Progress');
   const dueInvoices = students.flatMap((s) => s.payments).filter((p) => p.status === 'due');
 
   const sizeDist = [1, 2, 3].map((n) => ({
     label: `${n} student${n > 1 ? 's' : ''}`,
-    value: families.filter((f) => f.students.length === n).length,
+    value: activeFamilies.filter((f) => f.students.length === n).length,
   }));
   const sizeColors = ['var(--teal-500)', 'var(--gold-400)', 'var(--info)'];
 
@@ -30,7 +33,7 @@ export default function AdminDashboard() {
     color: ['var(--danger)', 'var(--warning)', 'var(--success)', 'var(--text-3)'][i],
   })).filter((d) => d.value > 0);
 
-  const recent = [...families].sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity)).slice(0, 6);
+  const recent = [...activeFamilies].sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity)).slice(0, 6);
 
   return (
     <>
@@ -40,8 +43,8 @@ export default function AdminDashboard() {
         actions={<Button variant="gold" onClick={() => navigate('/admin/tickets')}>Open ticket queue</Button>}
       />
       <div className="grid grid-4">
-        <StatCard label="Active families" value={families.length} delta="Each under a family code" tone="var(--teal-600)" />
-        <StatCard label="Active students" value={students.length} delta={`${(students.length / Math.max(families.length, 1)).toFixed(1)} per family avg`} />
+        <StatCard label="Active families" value={activeFamilies.length} delta={`${familiesOnLeave.length} on leave · ${deadFamilies.length} dead`} tone="var(--teal-600)" />
+        <StatCard label="Active students" value={students.length} delta={`${(students.length / Math.max(activeFamilies.length, 1)).toFixed(1)} per family avg`} />
         <StatCard label="Open tickets" value={openTickets.length} delta={`${tickets.length} total this month`} tone="var(--warning)" />
         <StatCard label="Invoices due" value={dueInvoices.length} delta="Awaiting payment" tone="var(--danger)" />
       </div>

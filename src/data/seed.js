@@ -25,17 +25,30 @@ export const SOURCES = ['Website Form', 'WhatsApp Inbound', 'Facebook Ad', 'Goog
 
 export const AGENTS = ['Sana Malik', 'Bilal Ahmed', 'Sohail Sales22', 'Fatima Noor', 'Usman Tariq', 'Ayesha Raza'];
 export const SUPPORT_AGENTS = ['Mariam QC', 'Hassan Support', 'Rabia Care', 'Danish Helpdesk'];
+export const DIARY_CATEGORIES = [
+  'Parent Preference',
+  'Student Behaviour',
+  'Teacher Feedback',
+  'QC Observation',
+  'Payment Follow-up',
+  'Complaint',
+  'Schedule Issue',
+  'Leave Request',
+  'Special Instruction',
+  'General Note',
+];
 
 export const TRIAL_STATUSES = ['scheduled', 'completed', 'no_show', 'converted', 'cancelled'];
 
 export const PLATFORMS = ['Zoom', 'Google Meet', 'Microsoft Teams', 'Skype'];
+
+export const FOLLOW_UP_PRIORITIES = ['Low', 'Medium', 'High', 'Urgent'];
 
 const FIRST = ['Ahmed', 'Fatima', 'Yusuf', 'Amina', 'Bilal', 'Sarah', 'Omar', 'Layla', 'Hamza', 'Zainab', 'Ibrahim', 'Maryam', 'Zaid', 'Noor', 'Khalid', 'Aisha', 'Tariq', 'Hafsa', 'Rayan', 'Sumaya', 'Idris', 'Halima', 'Musa', 'Safiya', 'Adam', 'Nadia', 'Salman', 'Iman', 'Karim', 'Rania'];
 const LAST = ['Khan', 'Ali', 'Rahman', 'Siddiqui', 'Hussain', 'Ahmed', 'Malik', 'Farooq', 'Iqbal', 'Rashid', 'Chaudhry', 'Baig', 'Sheikh', 'Qureshi', 'Abdullah', 'Hashmi', 'Yousuf', 'Aziz', 'Karimi', 'Osman'];
 
 export const LEAD_STAGES = [
   { key: 'raw', label: 'New Lead' },
-  { key: 'intake', label: 'Intake' },
   { key: 'qualified', label: 'Qualified' },
   { key: 'trial', label: 'Trial' },
   { key: 'trial_dead', label: 'Trial Dead' },
@@ -136,6 +149,8 @@ function makeStudent(course, tutorName) {
       ? [{ text: rnd(['Prefers evening classes after Isha.', 'Working on Surah Al-Mulk memorisation.', 'Needs revision of previous lesson weekly.']), author: rnd(SUPPORT_AGENTS), time: daysAgo(rndInt(1, 20)) }]
       : [],
     status: 'active',
+    enrollmentDate: daysAgo(rndInt(30, 320)),
+    progress: rndInt(42, 96),
   };
 }
 
@@ -147,6 +162,21 @@ function makeFamily(tutors) {
     makeStudent(rnd(COURSES), rnd(tutors).name),
   );
   const country = rnd(COUNTRIES);
+  const status = Math.random() > 0.22 ? 'active' : rnd(['on_leave', 'dead']);
+  const supportOfficer = rnd(SUPPORT_AGENTS);
+  const leaveStartDate = status === 'on_leave' ? daysAgo(rndInt(3, 25)) : null;
+  const expectedReturnDate = status === 'on_leave' ? daysFromNow(rndInt(5, 35)) : null;
+  const closureDate = status === 'dead' ? daysAgo(rndInt(7, 90)) : null;
+  const statusReason = status === 'active' ? '' : rnd(['Parent requested a pause.', 'Billing issue unresolved.', 'Student completed the program.', 'Could not agree on schedule.']);
+  const diaryEntry = {
+    id: 'DIA-' + rndInt(10000, 99999),
+    time: daysAgo(rndInt(1, 25)),
+    staff: supportOfficer,
+    department: 'Admin & Support',
+    category: rnd(DIARY_CATEGORIES),
+    note: rnd(['Parent prefers concise WhatsApp updates.', 'Confirm class timing before assigning substitute teacher.', 'Keep billing reminders friendly and brief.']),
+    followUpRequired: Math.random() > 0.55,
+  };
   return {
     id: 'FAM-' + familySeq++,
     parent: {
@@ -159,11 +189,25 @@ function makeFamily(tutors) {
     },
     surname: last,
     students,
-    status: 'active',
+    status,
+    supportOfficer,
+    billingStatus: rnd(['Paid', 'Due', 'Overdue', 'Advance']),
+    billingCycle: rnd(['Monthly', 'Quarterly']),
+    currency: rnd(['USD', 'GBP', 'CAD', 'AUD']),
+    leaveStartDate,
+    expectedReturnDate,
+    closureDate,
+    statusReason,
+    cancellationReason: statusReason,
     createdAt: daysAgo(rndInt(30, 400)),
     lastActivity: daysAgo(rndInt(0, 6)),
     communications: genCommunications(parentFirst + ' ' + last),
-    supportNotes: [],
+    supportNotes: [{ id: 'NOTE-' + rndInt(10000, 99999), text: diaryEntry.note, author: supportOfficer, time: diaryEntry.time, editedAt: null }],
+    familyDiary: [diaryEntry],
+    auditLog: [
+      { id: 'AUD-' + rndInt(10000, 99999), time: diaryEntry.time, staff: supportOfficer, action: 'Family diary note added', reason: diaryEntry.category, comments: diaryEntry.note },
+    ],
+    approvalRequests: [],
   };
 }
 
@@ -212,6 +256,9 @@ function makeLead(stage) {
   const last = rnd(LAST);
   const parentFirst = rnd(FIRST);
   const studentCount = rndInt(1, 2);
+  const createdAt = daysAgo(rndInt(1, 60));
+  const agent = rnd(AGENTS);
+  const timezone = rnd(TIMEZONES);
   return {
     id: 'LEAD-' + leadSeq++,
     stage,
@@ -220,7 +267,7 @@ function makeLead(stage) {
       email: `${parentFirst}.${last}@mail.com`.toLowerCase(),
       phone: `+${rndInt(1, 971)} ${rndInt(300, 999)}-${rndInt(1000, 9999)}`,
       country: rnd(COUNTRIES),
-      timezone: rnd(TIMEZONES),
+      timezone,
       preferredContact: rnd(['WhatsApp', 'Email', 'Phone']),
     },
     students: Array.from({ length: studentCount }, () => ({
@@ -232,11 +279,28 @@ function makeLead(stage) {
     })),
     course: rnd(COURSES),
     source: rnd(SOURCES),
-    agent: rnd(AGENTS),
+    agent,
     tags: [rnd(['High Intent', 'Price Sensitive', 'Referral', 'Kids Program', 'Needs Female Tutor', 'Weekend Only'])],
-    createdAt: daysAgo(rndInt(1, 60)),
+    priority: rnd(FOLLOW_UP_PRIORITIES),
+    nextFollowUp: daysFromNow(rndInt(-3, 7)),
+    createdAt,
     lastActivity: daysAgo(rndInt(0, 5)),
     notes: [],
+    communications: [],
+    timeline: [
+      {
+        id: 'TL-' + rndInt(10000, 99999),
+        time: createdAt,
+        staff: agent,
+        action: 'Lead Created',
+      },
+      {
+        id: 'TL-' + rndInt(10000, 99999),
+        time: new Date(createdAt.getTime() + 3 * 60000),
+        staff: agent,
+        action: `Assigned from ${rnd(SOURCES)}`,
+      },
+    ],
   };
 }
 
@@ -323,7 +387,7 @@ export function seedAll() {
     }),
   );
 
-  const counts = { raw: 12, intake: 8, qualified: 7, trial: 6, trial_dead: 8 };
+  const counts = { raw: 20, qualified: 7, trial: 6, trial_dead: 8 };
   const leads = [];
   Object.entries(counts).forEach(([stage, n]) => {
     for (let i = 0; i < n; i++) leads.push(makeLead(stage));

@@ -22,7 +22,7 @@ export default function Families() {
   const navigate = useNavigate();
 
   const list = useMemo(() => {
-    let l = families;
+    let l = families.filter((family) => family.status === 'active');
     if (q) {
       l = l.filter(
         (f) =>

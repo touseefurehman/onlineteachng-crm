@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/layout/PageHeader';
 import StatCard from '../../components/ui/StatCard';
 import Button from '../../components/ui/Button';
-import Icon from '../../components/ui/Icons';
 import { Card, CardBody, CardHead } from '../../components/ui/Card';
 import BarChart from '../../components/charts/BarChart';
 import DonutChart from '../../components/charts/DonutChart';
@@ -23,7 +22,6 @@ export default function EnrollmentDashboard() {
 
   const pipelineData = [
     { label: 'New', value: byStage('raw'), color: 'var(--teal-500)' },
-    { label: 'Intake', value: byStage('intake'), color: 'var(--teal-600)' },
     { label: 'Qualified', value: byStage('qualified'), color: 'var(--gold-400)' },
     { label: 'Trial', value: byStage('trial'), color: 'var(--info)' },
     { label: 'Dead', value: byStage('trial_dead'), color: 'var(--danger)' },
@@ -43,11 +41,6 @@ export default function EnrollmentDashboard() {
       <PageHeader
         title="Enrollment Dashboard"
         subtitle="Pipeline health from first contact to trial conversion"
-        actions={
-          <Button variant="gold" icon={<Icon name="calendar" size={15} />} onClick={() => navigate('/enrollment/schedule-trial')}>
-            Schedule a Trial
-          </Button>
-        }
       />
       <div className="grid grid-4">
         <StatCard label="New leads" value={byStage('raw')} delta="Awaiting first contact" tone="var(--text-3)" />

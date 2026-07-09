@@ -6,7 +6,6 @@ import Button from '../../components/ui/Button';
 import Avatar from '../../components/ui/Avatar';
 import Badge, { trialStatusLabel, trialStatusTone } from '../../components/ui/Badge';
 import EmptyState from '../../components/ui/EmptyState';
-import Icon from '../../components/ui/Icons';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../hooks/useToast';
 import { fmtDate, fmtTime } from '../../utils/date';
@@ -30,13 +29,8 @@ export default function Trials() {
   return (
     <>
       <PageHeader
-        title="Trials"
-        subtitle="Every trial class, its tutor and its outcome"
-        actions={
-          <Button variant="gold" icon={<Icon name="calendar" size={15} />} onClick={() => navigate('/enrollment/schedule-trial')}>
-            Schedule a Trial
-          </Button>
-        }
+        title="Trial Students"
+        subtitle="Every trial student, assigned tutor and trial outcome"
       />
       <div className="grid grid-3">
         <StatCard label="Scheduled" value={scheduled.length} delta="Upcoming trial classes" tone="var(--info)" />

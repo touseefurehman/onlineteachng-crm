@@ -21,6 +21,9 @@ const STUDENT_TABS = [
   { key: 'notes', label: 'Notes' },
 ];
 
+const FAMILY_STATUS_LABEL = { active: 'Active', on_leave: 'On Leave', dead: 'Dead' };
+const FAMILY_STATUS_TONE = { active: 'success', on_leave: 'warning', dead: 'danger' };
+
 export default function FamilyProfile() {
   const { id } = useParams();
   const [params] = useSearchParams();
@@ -59,7 +62,7 @@ export default function FamilyProfile() {
     <>
       <PageHeader
         title={`${family.surname} Family`}
-        subtitle={<span><span className="mono">{family.id}</span> · active since {fmtDate(family.createdAt)}</span>}
+        subtitle={<span><span className="mono">{family.id}</span> · registered {fmtDate(family.createdAt)} · {FAMILY_STATUS_LABEL[family.status] || family.status}</span>}
         actions={<Button variant="ghost" onClick={() => navigate('/admin/families')}>Back to families</Button>}
       />
 
@@ -78,7 +81,8 @@ export default function FamilyProfile() {
             <div className="summary-row"><label>Phone</label><b>{family.parent.phone}</b></div>
             <div className="summary-row"><label>Email</label><b style={{ wordBreak: 'break-all' }}>{family.parent.email}</b></div>
             <div className="summary-row"><label>Preferred contact</label><b>{family.parent.preferredContact}</b></div>
-            <div className="summary-row" style={{ borderBottom: 0 }}><label>Time zone</label><b>{family.parent.timezone}</b></div>
+            <div className="summary-row"><label>Time zone</label><b>{family.parent.timezone}</b></div>
+            <div className="summary-row" style={{ borderBottom: 0 }}><label>Status</label><b><Badge tone={FAMILY_STATUS_TONE[family.status] || 'muted'}>{FAMILY_STATUS_LABEL[family.status] || family.status}</Badge></b></div>
             <Button
               size="sm"
               variant="ghost"
@@ -115,8 +119,8 @@ export default function FamilyProfile() {
             <Card>
               <CardHead
                 title={`${student.name} ${family.surname}`}
-                sub={`${student.grade} · age ${student.age} · ${student.course}`}
-                right={<Badge tone="success">Active student</Badge>}
+                sub={`${student.grade} · age ${student.age} · ${student.course} · enrolled ${fmtDate(student.enrollmentDate)}`}
+                right={<Badge tone={FAMILY_STATUS_TONE[family.status] || 'muted'}>{family.status === 'active' ? 'Active student' : FAMILY_STATUS_LABEL[family.status]}</Badge>}
               />
               <CardBody>
                 <Tabs tabs={STUDENT_TABS} active={tab} onChange={setTab} />

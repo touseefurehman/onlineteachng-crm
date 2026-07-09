@@ -19,7 +19,7 @@ function studentNames(students) {
  * Reusable pipeline-stage table with search, pagination,
  * loading skeletons and an empty state.
  */
-export default function LeadTable({ stage, actionsFor, emptyTitle, emptyBody }) {
+export default function LeadTable({ stage, actionsFor, emptyTitle, emptyBody, extraColumns = [] }) {
   const { leads, search } = useApp();
   const q = useDebounce(search.toLowerCase());
   const [page, setPage] = useState(1);
@@ -63,13 +63,14 @@ export default function LeadTable({ stage, actionsFor, emptyTitle, emptyBody }) 
               <th>Country</th>
               <th>Time zone</th>
               <th>Course interest</th>
+              {extraColumns.map((col) => <th key={col.header}>{col.header}</th>)}
               <th>Created</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={10} />)
+              Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={10 + extraColumns.length} />)
             ) : rows.length ? (
               rows.map((l) => (
                 <tr key={l.id}>
@@ -89,6 +90,7 @@ export default function LeadTable({ stage, actionsFor, emptyTitle, emptyBody }) 
                   <td>{l.parent.country || '—'}</td>
                   <td className="lead-timezone-cell">{l.parent.timezone || '—'}</td>
                   <td>{l.course}</td>
+                  {extraColumns.map((col) => <td key={col.header}>{col.render(l)}</td>)}
                   <td>{timeAgo(l.createdAt)}</td>
                   <td>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{actionsFor(l)}</div>
@@ -97,7 +99,7 @@ export default function LeadTable({ stage, actionsFor, emptyTitle, emptyBody }) 
               ))
             ) : (
               <tr>
-                <td colSpan={10}>
+                <td colSpan={10 + extraColumns.length}>
                   <EmptyState icon="users" title={emptyTitle}>{emptyBody}</EmptyState>
                 </td>
               </tr>
