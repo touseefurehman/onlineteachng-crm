@@ -297,6 +297,15 @@ tbody tr:last-child td { border-bottom: 0; }
 }
 .step-description { margin-top: 2px; color: var(--text-3); font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+.family-management-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.family-filter-note { color: var(--text-2); font-size: 12px; }
+.filter-count { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 3px; border-radius: 10px; background: rgba(0,0,0,.08); font-size: 10px; }
+.filter-chip.active .filter-count { background: rgba(255,255,255,.2); }
+.table-subtext { margin-top: 2px; color: var(--text-2); font-size: 11.5px; }
+.pagination-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; color: var(--text-2); font-size: 12.5px; }
+.pagination-bar > div { display: flex; align-items: center; gap: 8px; }
+.pagination-status { min-width: 86px; text-align: center; }
+
 .form-info-box, .availability-info {
   display: flex; align-items: flex-start; gap: 9px; margin-bottom: 16px; padding: 10px 12px;
   border: 1px solid #bfe3dc; border-radius: 10px; background: #f1fbf9; color: var(--teal-800); font-size: 12.5px; line-height: 1.45;
@@ -1167,6 +1176,7 @@ tbody tr:last-child td { border-bottom: 0; }
   .summary-panel { position: static; }
   .wizard-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .student-fields { grid-template-columns: repeat(2, 1fr); }
+  .pagination-bar { align-items: flex-start; flex-direction: column; }
 }
 @media (max-width: 640px) {
   .page-root { padding: 16px 14px 60px; }

@@ -43,9 +43,7 @@ export const NAV = {
       {
         group: 'Families & Students',
         items: [
-          { to: '/admin/families', label: 'Active Families', icon: 'family', badge: (s) => s.families.filter((f) => f.status === 'active').length },
-          { to: '/admin/families-on-leave', label: 'Families on Leave', icon: 'clock', badge: (s) => s.families.filter((f) => f.status === 'on_leave').length },
-          { to: '/admin/dead-families', label: 'Dead Families', icon: 'x', badge: (s) => s.families.filter((f) => f.status === 'dead').length },
+          { to: '/admin/families', label: 'Family Management', icon: 'family', badge: (s) => s.families.length },
           { to: '/admin/active-students', label: 'Active Students', icon: 'users', badge: (s) => s.families.filter((f) => f.status === 'active').flatMap((f) => f.students).length },
           { to: '/admin/student-profiles', label: 'Student Profiles', icon: 'user' },
         ],

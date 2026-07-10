@@ -26,8 +26,6 @@ import {
   Attendance,
   BillingInvoices,
   ClassSchedule,
-  DeadFamilies,
-  FamiliesOnLeave,
   FamilyDiary,
   ParentCommunication,
   StudentNotes,
@@ -69,8 +67,8 @@ export default function App() {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="families" element={<Families />} />
               <Route path="families/:id" element={<FamilyProfile />} />
-              <Route path="families-on-leave" element={<FamiliesOnLeave />} />
-              <Route path="dead-families" element={<DeadFamilies />} />
+              <Route path="families-on-leave" element={<Navigate to="/admin/families" replace />} />
+              <Route path="dead-families" element={<Navigate to="/admin/families" replace />} />
               <Route path="active-students" element={<ActiveStudents />} />
               <Route path="student-profiles" element={<StudentProfiles />} />
               <Route path="teacher-schedule" element={<TeacherSchedule />} />

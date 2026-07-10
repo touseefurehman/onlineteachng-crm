@@ -16,6 +16,7 @@ import { DIARY_CATEGORIES, SUPPORT_AGENTS } from '../../data/seed';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../hooks/useToast';
 import { fmtDate, fmtDateTime, fmtTime, DAY_LABELS, todayISO } from '../../utils/date';
+import Pagination, { pageItems } from '../../components/ui/Pagination';
 
 const FAMILY_STATUS_LABEL = { active: 'Active', on_leave: 'On Leave', dead: 'Dead' };
 const FAMILY_STATUS_TONE = { active: 'success', on_leave: 'warning', dead: 'danger' };
@@ -173,6 +174,8 @@ export function ActiveStudents() {
     !q || student.name.toLowerCase().includes(q) || family.surname.toLowerCase().includes(q) || student.teacher.toLowerCase().includes(q),
   );
   const navigate = useNavigate();
+  const [page, setPage] = useState(1);
+  const paged = pageItems(rows, page);
   return (
     <>
       <PageHeader title="Active Students" subtitle="Students remain grouped under their family profile" />
@@ -180,7 +183,7 @@ export function ActiveStudents() {
         <table>
           <thead><tr><th>Student</th><th>Family</th><th>Course</th><th>Teacher</th><th>Schedule</th><th>Attendance</th><th>Progress</th><th>Actions</th></tr></thead>
           <tbody>
-            {rows.map(({ family, student }) => {
+            {paged.items.map(({ family, student }) => {
               const present = student.attendance.filter((a) => a.status === 'present').length;
               const rate = student.attendance.length ? Math.round((present / student.attendance.length) * 100) : 0;
               return (
@@ -199,6 +202,7 @@ export function ActiveStudents() {
           </tbody>
         </table>
       </div>
+      <Pagination totalItems={rows.length} page={paged.page} onPageChange={setPage} />
     </>
   );
 }

@@ -13,6 +13,7 @@ import { useApp } from '../../context/AppContext';
 import { useToast } from '../../hooks/useToast';
 import { fmtDate } from '../../utils/date';
 import { useDebounce } from '../../hooks/useDebounce';
+import Pagination, { pageItems } from '../../components/ui/Pagination';
 
 const STATUS_TONE = { Open: 'danger', 'In Progress': 'warning', Resolved: 'success', Closed: 'muted' };
 const PRIORITY_TONE = { High: 'danger', Medium: 'warning', Low: 'muted' };
@@ -26,6 +27,7 @@ export default function Tickets() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ familyId: '', subject: '', priority: 'Medium' });
   const [errors, setErrors] = useState({});
+  const [page, setPage] = useState(1);
 
   const list = useMemo(() => {
     let l = [...tickets].sort((a, b) => new Date(b.created) - new Date(a.created));
@@ -33,6 +35,7 @@ export default function Tickets() {
     if (q) l = l.filter((t) => t.subject.toLowerCase().includes(q) || t.familyName.toLowerCase().includes(q) || t.id.toLowerCase().includes(q));
     return l;
   }, [tickets, filter, q]);
+  const paged = pageItems(list, page);
 
   const submit = () => {
     const e = {};
@@ -83,7 +86,7 @@ export default function Tickets() {
             <tr><th>Ticket</th><th>Family</th><th>Subject</th><th>Priority</th><th>Status</th><th>Agent</th><th>Created</th><th>Actions</th></tr>
           </thead>
           <tbody>
-            {list.length ? list.map((t) => (
+            {paged.items.length ? paged.items.map((t) => (
               <tr key={t.id}>
                 <td className="mono" style={{ fontSize: 12 }}>{t.id}</td>
                 <td>
@@ -121,6 +124,7 @@ export default function Tickets() {
           </tbody>
         </table>
       </div>
+      <Pagination totalItems={list.length} page={paged.page} onPageChange={setPage} />
 
       <Modal open={open} title="New support ticket" onClose={() => setOpen(false)}>
         <div style={{ display: 'grid', gap: 14 }}>

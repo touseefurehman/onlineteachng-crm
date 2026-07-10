@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/layout/PageHeader';
 import StatCard from '../../components/ui/StatCard';
@@ -10,12 +10,14 @@ import { useApp } from '../../context/AppContext';
 import { useToast } from '../../hooks/useToast';
 import { fmtDate, fmtTime } from '../../utils/date';
 import { useDebounce } from '../../hooks/useDebounce';
+import Pagination, { pageItems } from '../../components/ui/Pagination';
 
 export default function Trials() {
   const { trials, search, actions } = useApp();
   const toast = useToast();
   const navigate = useNavigate();
   const q = useDebounce(search.toLowerCase());
+  const [page, setPage] = useState(1);
 
   const list = useMemo(() => {
     let l = [...trials].sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
@@ -25,6 +27,8 @@ export default function Trials() {
 
   const scheduled = trials.filter((t) => t.status === 'scheduled');
   const today = new Date().toISOString().slice(0, 10);
+  const paged = pageItems(list, page);
+  useEffect(() => setPage(1), [q]);
 
   return (
     <>
@@ -46,7 +50,7 @@ export default function Trials() {
             </tr>
           </thead>
           <tbody>
-            {list.length ? list.map((t) => (
+            {paged.items.length ? paged.items.map((t) => (
               <tr key={t.id}>
                 <td>
                   <div className="name-cell">
@@ -95,6 +99,7 @@ export default function Trials() {
           </tbody>
         </table>
       </div>
+      <Pagination totalItems={list.length} page={paged.page} onPageChange={setPage} />
     </>
   );
 }
