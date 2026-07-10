@@ -51,6 +51,17 @@ export default function FamilyProfile() {
 
   const tutor = tutors.find((t) => t.name === student?.teacher);
 
+  const familyName = `${family.surname} Family`;
+  const studentName = student ? `${student.name} ${family.surname}` : '—';
+  const numberOfStudents = family.students.length;
+  const totalFees = student?.payments?.reduce((sum, p) => sum + Number(p.amount || 0), 0) || 0;
+  const currentClassTime = student?.schedule?.[0]?.time ? fmtTime(student.schedule[0].time) : '—';
+  const paidPayments = student?.payments?.filter((p) => p.status === 'paid') || [];
+  const paidAmount = paidPayments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  const nextDuePayment = student?.payments?.find((p) => p.status !== 'paid') || student?.payments?.[0];
+  const paymentMethod = student?.paymentMethod || 'Bank Transfer';
+  const senderName = student?.senderName || family.parent.name;
+
   const addNote = () => {
     if (!noteDraft.trim()) return;
     actions.addStudentNote(family.id, student.id, noteDraft.trim());
@@ -69,7 +80,7 @@ export default function FamilyProfile() {
       <div className="grid" style={{ gridTemplateColumns: '300px 1fr', gap: 16, alignItems: 'start' }}>
         {/* Parent profile — shared across the family */}
         <Card>
-          <CardHead title="Parent profile" sub="Contact details shared across the family" />
+          <CardHead title="Family details" sub="Core contact, schedule, and billing details for this family" />
           <CardBody style={{ paddingTop: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
               <Avatar name={family.parent.name} size={44} />
@@ -78,10 +89,21 @@ export default function FamilyProfile() {
                 <div style={{ fontSize: 12, color: 'var(--text-2)' }}>{family.parent.country}</div>
               </div>
             </div>
-            <div className="summary-row"><label>Phone</label><b>{family.parent.phone}</b></div>
+            <div className="summary-row"><label>Family name</label><b>{familyName}</b></div>
+            <div className="summary-row"><label>Student name</label><b>{studentName}</b></div>
+            <div className="summary-row"><label>Number of students</label><b>{numberOfStudents}</b></div>
+            <div className="summary-row"><label>Phone number</label><b>{family.parent.phone}</b></div>
+            <div className="summary-row"><label>Country</label><b>{family.parent.country}</b></div>
             <div className="summary-row"><label>Email</label><b style={{ wordBreak: 'break-all' }}>{family.parent.email}</b></div>
-            <div className="summary-row"><label>Preferred contact</label><b>{family.parent.preferredContact}</b></div>
             <div className="summary-row"><label>Time zone</label><b>{family.parent.timezone}</b></div>
+            <div className="summary-row"><label>Start date</label><b>{fmtDate(student?.enrollmentDate || family.createdAt)}</b></div>
+            <div className="summary-row"><label>Total fees</label><b>{family.currency || 'USD'} {totalFees.toFixed(2)}</b></div>
+            <div className="summary-row"><label>Current class time</label><b>{currentClassTime}</b></div>
+            <div className="summary-row"><label>Paid</label><b>{paidAmount.toFixed(2)} {family.currency || 'USD'}</b></div>
+            <div className="summary-row"><label>Due date</label><b>{nextDuePayment ? fmtDate(nextDuePayment.date) : '—'}</b></div>
+            <div className="summary-row"><label>Payment method</label><b>{paymentMethod}</b></div>
+            <div className="summary-row"><label>Sender name</label><b>{senderName}</b></div>
+            <div className="summary-row"><label>Preferred contact</label><b>{family.parent.preferredContact}</b></div>
             <div className="summary-row" style={{ borderBottom: 0 }}><label>Status</label><b><Badge tone={FAMILY_STATUS_TONE[family.status] || 'muted'}>{FAMILY_STATUS_LABEL[family.status] || family.status}</Badge></b></div>
             <Button
               size="sm"
