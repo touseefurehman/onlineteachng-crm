@@ -170,11 +170,15 @@ export default function TrialScheduling() {
     if (s === 1) {
       if (!parent.name.trim()) e.parentName = 'Parent name is required.';
       if (!parent.phone.trim()) e.phone = 'Contact number is required.';
-      if (!students[0]?.name.trim()) e.student = 'Add at least one student name.';
     }
     if (s === 2) {
+      if (!students[0]?.name.trim()) e.student = 'Add at least one student name.';
+    }
+    if (s === 3) {
       if (!filters.course) e.course = 'Select a course.';
       if (!slot.date) e.date = 'Pick a date.';
+    }
+    if (s === 4) {
       if (!tutorId) e.tutor = 'Select an available tutor.';
     }
     setErrors(e);
@@ -185,7 +189,7 @@ export default function TrialScheduling() {
     return true;
   };
 
-  const next = () => { if (validateStep(step)) setStep((s) => Math.min(3, s + 1)); };
+  const next = () => { if (validateStep(step)) setStep((s) => Math.min(5, s + 1)); };
   const back = () => setStep((s) => Math.max(1, s - 1));
 
   /* ------------------------------ render ------------------------------ */
@@ -252,13 +256,25 @@ export default function TrialScheduling() {
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <div className="wizard-steps">
-          {[1, 2, 3].map((i) => (
+        <div className="wizard-steps" aria-label="Trial scheduling progress">
+          {[
+            ['Family', 'Contact details'],
+            ['Student', 'Learner details'],
+            ['Schedule', 'Time & course'],
+            ['Tutor', 'Match & platform'],
+            ['Review', 'Notes & confirm'],
+          ].map(([label, description], index) => {
+            const i = index + 1;
+            return (
             <div key={i} className={`wizard-step ${step > i ? 'completed' : ''} ${step === i ? 'active' : ''}`}>
-              <div className="step-index">{i}</div>
-              <div className="step-label">{i === 1 ? 'Family' : i === 2 ? 'Slot & Tutor' : 'Notes & Confirm'}</div>
+              <div className="step-index">{step > i ? <Icon name="check" size={16} /> : i}</div>
+              <div>
+                <div className="step-label">{label}</div>
+                <div className="step-description">{description}</div>
+              </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -274,6 +290,10 @@ export default function TrialScheduling() {
                   right={sourceLead && <Badge tone="teal" dot={false}>Lead {sourceLead.id}</Badge>}
                 />
                 <CardBody>
+                  <div className="form-info-box">
+                    <Icon name="phone" size={18} />
+                    <span>Use the parent’s preferred contact channel so reminders and trial updates reach them reliably.</span>
+                  </div>
                   <div className="form-grid">
                     <Field label="Parent name" required error={errors.parentName}>
                       <input value={parent.name} onChange={(e) => setParent({ ...parent, name: e.target.value })} placeholder="e.g. Talat Soban" />
@@ -305,51 +325,57 @@ export default function TrialScheduling() {
                 </CardBody>
               </Card>
 
-              <Card>
-                <CardHead
-                  title="Student Information"
-                  sub="Creates the student account(s) and links them to the family."
-                  right={<Badge tone="success" dot={false}>{students.length} student{students.length > 1 ? 's' : ''}</Badge>}
-                />
-                <CardBody>
-                  {errors.student && <div className="error-msg" style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 8 }}>{errors.student}</div>}
-                  <div style={{ display: 'grid', gap: 10 }}>
-                    {students.map((s, i) => (
-                      <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.6fr 0.8fr 1fr 1fr auto', gap: 10, alignItems: 'end' }}>
-                        <Field label={i === 0 ? 'Student name' : undefined} required={i === 0}>
-                          <input value={s.name} placeholder="Student name" onChange={(e) => setStudents(students.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
-                        </Field>
-                        <Field label={i === 0 ? 'Age' : undefined}>
-                          <input value={s.age} placeholder="Age" inputMode="numeric" onChange={(e) => setStudents(students.map((x, j) => (j === i ? { ...x, age: e.target.value } : x)))} />
-                        </Field>
-                        <Field label={i === 0 ? 'Gender' : undefined}>
-                          <select value={s.gender} onChange={(e) => setStudents(students.map((x, j) => (j === i ? { ...x, gender: e.target.value } : x)))}>
-                            <option value="">—</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                          </select>
-                        </Field>
-                        <Field label={i === 0 ? 'Grade / level' : undefined}>
-                          <input value={s.grade} placeholder="e.g. Grade 5" onChange={(e) => setStudents(students.map((x, j) => (j === i ? { ...x, grade: e.target.value } : x)))} />
-                        </Field>
-                        <Field label={i === 0 ? 'Notes' : undefined}>
-                          <input value={s.notes} placeholder="Optional" onChange={(e) => setStudents(students.map((x, j) => (j === i ? { ...x, notes: e.target.value } : x)))} />
-                        </Field>
-                        <Button variant="danger-ghost" size="sm" disabled={students.length === 1} onClick={() => setStudents(students.filter((_, j) => j !== i))} aria-label="Remove student">✕</Button>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ marginTop: 12 }}>
-                    <Button variant="ghost" size="sm" icon={<Icon name="plus" size={14} />} onClick={() => setStudents([...students, emptyStudent()])}>
-                      Add student
-                    </Button>
-                  </div>
-                </CardBody>
-              </Card>
             </>
           )}
 
           {step === 2 && (
+            <Card>
+              <CardHead
+                title="Student Information"
+                sub="Add each learner who may join this family. You can add more students later."
+                right={<Badge tone="success" dot={false}>{students.length} student{students.length > 1 ? 's' : ''}</Badge>}
+              />
+              <CardBody>
+                <div className="form-info-box soft">
+                  <Icon name="users" size={18} />
+                  <span>The first student is used for this trial. Extra students are saved to the same family record.</span>
+                </div>
+                {errors.student && <div className="error-msg" style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 8 }}>{errors.student}</div>}
+                <div className="student-list">
+                  {students.map((s, i) => (
+                    <div key={i} className="student-detail-box">
+                      <div className="student-detail-head">
+                        <b>{i === 0 ? 'Trial student' : `Student ${i + 1}`}</b>
+                        {students.length > 1 && <Button variant="danger-ghost" size="sm" onClick={() => setStudents(students.filter((_, j) => j !== i))}>Remove</Button>}
+                      </div>
+                      <div className="student-fields">
+                        <Field label="Student name" required={i === 0}>
+                          <input value={s.name} placeholder="Student name" onChange={(e) => setStudents(students.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
+                        </Field>
+                        <Field label="Age">
+                          <input value={s.age} placeholder="Age" inputMode="numeric" onChange={(e) => setStudents(students.map((x, j) => (j === i ? { ...x, age: e.target.value } : x)))} />
+                        </Field>
+                        <Field label="Gender">
+                          <select value={s.gender} onChange={(e) => setStudents(students.map((x, j) => (j === i ? { ...x, gender: e.target.value } : x)))}>
+                            <option value="">—</option><option value="male">Male</option><option value="female">Female</option>
+                          </select>
+                        </Field>
+                        <Field label="Grade / level">
+                          <input value={s.grade} placeholder="e.g. Grade 5" onChange={(e) => setStudents(students.map((x, j) => (j === i ? { ...x, grade: e.target.value } : x)))} />
+                        </Field>
+                        <Field label="Notes">
+                          <input value={s.notes} placeholder="Optional" onChange={(e) => setStudents(students.map((x, j) => (j === i ? { ...x, notes: e.target.value } : x)))} />
+                        </Field>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 12 }}><Button variant="ghost" size="sm" icon={<Icon name="plus" size={14} />} onClick={() => setStudents([...students, emptyStudent()])}>Add another student</Button></div>
+              </CardBody>
+            </Card>
+          )}
+
+          {step === 3 && (
             <>
               <Card>
                 <CardHead
@@ -362,6 +388,10 @@ export default function TrialScheduling() {
                   }
                 />
                 <CardBody>
+                  <div className="form-info-box soft">
+                    <Icon name="clock" size={18} />
+                    <span>Enter the time in the family’s time zone. Tutor availability updates from this exact time slot.</span>
+                  </div>
                   <div className="form-grid-2">
                     <div style={{ border: '1px solid var(--border-soft)', borderRadius: 12, padding: 14 }}>
                       <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10 }}>Student time</div>
@@ -407,9 +437,8 @@ export default function TrialScheduling() {
 
               <Card>
                 <CardHead
-                  title="Tutor Filters & Trial Settings"
-                  sub="Filters are applied before showing available tutors. Only tutors with duty hours covering the slot and no conflicting booking appear."
-                  right={<Badge tone="success" dot={false}>No admin queue</Badge>}
+                  title="Course & Tutor Preferences"
+                  sub="Set the course and any preference before we find the best available tutor."
                 />
                 <CardBody>
                   <div className="chip-row" style={{ marginBottom: 14 }}>
@@ -445,6 +474,23 @@ export default function TrialScheduling() {
                     </Field>
                   </div>
 
+                </CardBody>
+              </Card>
+            </>
+          )}
+
+          {step === 4 && (
+            <Card>
+              <CardHead
+                title="Choose a Tutor"
+                sub="Only tutors who are available for this exact time and meet your preferences are shown."
+                right={<Badge tone="success" dot={false}>No admin queue</Badge>}
+              />
+              <CardBody>
+                  <div className="availability-info">
+                    <Icon name="calendar" size={18} />
+                    <span><b>{slot.date}</b> · {fmtTime(slot.start)}–{fmtTime(end)} · {parent.timezone}</span>
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '18px 0 10px', flexWrap: 'wrap', gap: 10 }}>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 13.5 }}>Available tutors <span style={{ color: 'var(--danger)' }}>*</span></div>
@@ -524,16 +570,19 @@ export default function TrialScheduling() {
                       />
                     </Field>
                   </div>
-                </CardBody>
-              </Card>
-            </>
+              </CardBody>
+            </Card>
           )}
 
-          {step === 3 && (
+          {step === 5 && (
             <>
               <Card>
-                <CardHead title="Preferences & Trial Notes" sub="Saved against the family and trial for reuse." />
+                <CardHead title="Final Notes & Confirmation" sub="Add context that will help the tutor deliver a great first class." />
                 <CardBody>
+                  <div className="form-info-box">
+                    <Icon name="check" size={18} />
+                    <span>Review the live summary before scheduling. The tutor is notified immediately after confirmation.</span>
+                  </div>
                   <div className="form-grid">
                     <Field label="Preferred language">
                       <input value={language} onChange={(e) => setLanguage(e.target.value)} placeholder="English / Urdu / Arabic" />
@@ -567,12 +616,12 @@ export default function TrialScheduling() {
                 {rescheduleTrial ? 'Back to Trials' : 'Back to Leads'}
               </Button>
             )}
-            {step === 2 && (
+            {step === 4 && (
               <Button variant="gold" icon={<Icon name="refresh" size={15} />} onClick={refresh} disabled={refreshing}>
                 {refreshing ? 'Refreshing…' : 'Refresh Available Tutors'}
               </Button>
             )}
-            {step < 3 ? (
+            {step < 5 ? (
               <Button onClick={next} icon={<Icon name="chev-right" size={15} />}>
                 Next
               </Button>

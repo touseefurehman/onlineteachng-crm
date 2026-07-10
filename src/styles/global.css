@@ -252,32 +252,34 @@ tbody tr:last-child td { border-bottom: 0; }
 .tabs button.active { color: var(--teal-600); border-bottom-color: var(--teal-600); }
 
 .wizard-steps {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
 }
 .wizard-step {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: 16px;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
   border: 1px solid var(--border);
   background: #fff;
-  min-width: 180px;
+  min-width: 0;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
 }
 .wizard-step.active {
   border-color: var(--teal-600);
   background: #f1fbf9;
+  box-shadow: 0 5px 16px rgba(16, 111, 99, .11);
 }
 .wizard-step.completed {
   border-color: var(--teal-500);
   background: #eaf6f3;
 }
 .step-index {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -289,10 +291,24 @@ tbody tr:last-child td { border-bottom: 0; }
   background: var(--success);
 }
 .step-label {
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--text-1);
   font-weight: 600;
 }
+.step-description { margin-top: 2px; color: var(--text-3); font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.form-info-box, .availability-info {
+  display: flex; align-items: flex-start; gap: 9px; margin-bottom: 16px; padding: 10px 12px;
+  border: 1px solid #bfe3dc; border-radius: 10px; background: #f1fbf9; color: var(--teal-800); font-size: 12.5px; line-height: 1.45;
+}
+.form-info-box.soft { border-color: #e7dfbb; background: #fffbed; color: #695617; }
+.form-info-box svg, .availability-info svg { flex: 0 0 auto; margin-top: 1px; }
+.availability-info { align-items: center; margin-bottom: 14px; background: var(--teal-100); border-color: var(--teal-200); }
+
+.student-list { display: grid; gap: 12px; }
+.student-detail-box { border: 1px solid var(--border-soft); border-radius: 12px; padding: 14px; background: #fcfdfd; }
+.student-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; font-size: 13px; color: var(--teal-800); }
+.student-fields { display: grid; grid-template-columns: 1.35fr .55fr .8fr 1fr 1.2fr; gap: 12px; }
 
 .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .filter-chip {
@@ -1149,10 +1165,15 @@ tbody tr:last-child td { border-bottom: 0; }
   .settings-notification-grid { grid-template-columns: 1fr; }
   .sched-layout { grid-template-columns: 1fr !important; }
   .summary-panel { position: static; }
+  .wizard-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .student-fields { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 640px) {
   .page-root { padding: 16px 14px 60px; }
   .grid-4 { grid-template-columns: 1fr; }
   .form-grid, .form-grid-2 { grid-template-columns: 1fr; }
+  .wizard-steps { grid-template-columns: 1fr; }
+  .step-description { white-space: normal; }
+  .student-fields { grid-template-columns: 1fr; }
   .top-chip.hide-sm { display: none; }
 }
