@@ -251,6 +251,49 @@ tbody tr:last-child td { border-bottom: 0; }
 .tabs button:hover { color: var(--teal-600); }
 .tabs button.active { color: var(--teal-600); border-bottom-color: var(--teal-600); }
 
+.wizard-steps {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.wizard-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: #fff;
+  min-width: 180px;
+}
+.wizard-step.active {
+  border-color: var(--teal-600);
+  background: #f1fbf9;
+}
+.wizard-step.completed {
+  border-color: var(--teal-500);
+  background: #eaf6f3;
+}
+.step-index {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--teal-600);
+  color: #fff;
+  font-weight: 700;
+}
+.wizard-step.completed .step-index {
+  background: var(--success);
+}
+.step-label {
+  font-size: 13px;
+  color: var(--text-1);
+  font-weight: 600;
+}
+
 .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .filter-chip {
   border: 1px solid var(--border); background: #fff; border-radius: 20px; padding: 7px 14px;
